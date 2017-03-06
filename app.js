@@ -1,13 +1,13 @@
-var express = require('express');
-var path = require('path');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var index = require('./routes/index');
-var users = require('./routes/users');
-var request = require('request');
-var cheerio = require('cheerio');
-var fs = require('fs');
+let express = require('express');
+let path = require('path');
+let logger = require('morgan');
+let cookieParser = require('cookie-parser');
+let bodyParser = require('body-parser');
+let index = require('./routes/index');
+// let users = require('./routes/users');
+let request = require('request');
+let cheerio = require('cheerio');
+let fs = require('fs');
 
 
 var app = express();
@@ -27,12 +27,12 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
-app.use('/users', users);
+// app.use('/users', users);
 
 
 
 function scrapeData(){
-  var url = 'http://www.imdb.com/title/tt0133093/?ref_=nv_sr_1';
+  var url = 'http://www.imdb.com/title/tt0068646/fullcredits';
 
   //Makes the request to the given URL
 
@@ -40,23 +40,18 @@ function scrapeData(){
     if (error){
       console.log(error);
     }
-    // the $ has nearly the same use as in jquery
-    var $ = cheerio.load(body);
-    var nameArr = [];
 
-    $('#titleCast').first().children()
+    let $ = cheerio.load(body);
+    var actor = [];
+    var castList = $('.cast_list .primary_photo .loadlate')
+    castList.each(function(index, elem){
+      actor.push($(elem).attr('alt'))
+      actor.length = actor.length < 10 ? actor.length : 10;
+    })
+    console.log(actor);
   })
 }
-
-
-
-
-
-
-
-
-
-
+scrapeData();
 
 
 
