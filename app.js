@@ -9,10 +9,12 @@ let request = require('request');
 let cheerio = require('cheerio');
 let fs = require('fs');
 
+let app = express();
 
-var app = express();
+let mongoose = require('mongoose');
+var db = mongoose.connection;
 
-// var server = app.listen(8080);
+mongoose.connect('localhost:27017/popcorn');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,11 +30,122 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 // app.use('/users', users);
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log("Connected to mongodb");
+});
+
+
+// {
+//   brew services start mongodb
+//   mongo services mongodb
+//   npm run server
+// }
+
+
+// let userDataSchema = new Schema({
+//   title: String
+//
+// })
+
+
+
+
+
+
+
+
+
+
+let Schema = mongoose.Schema;
+
+// let movieSchema = new Schema({
+//   _id: String
+//   , imdb_id: String
+//   , title: String
+//   , year: String
+//   , slug: String
+//   , synopsis: String
+//   , runtime: String
+//   , country: String
+//   , last_updated: Number
+//   , released: Number
+//   , certification: String
+//   , torrents: Object
+//   , trailer: String
+//   , genres: Array
+//   , images: Object
+//   , rating: Object
+//   , __v: Number
+// })
+//
+// let id_movie = mongoose.model('movie', movieSchema);
+//
+// id_movie.findOne({'imdb_id' : 'tt3470600'}, function (err, movie){
+//   if (err){
+//     console.log(err);
+//   } else {
+//     console.log(movie.title);
+//     console.log(movie.id);
+//   }
+// })
+
+
+
+
+let movieSchema1 = new Schema({
+  _id: String
+  , imdb_id: String
+  , title: String
+  , year: String
+  , cast: Array
+  , slug: String
+  , synopsis: String
+  , runtime: String
+  , country: String
+  , last_updated: Number
+  , released: Number
+  , certification: String
+  , torrents: Object
+  , trailer: String
+  , genres: Array
+  , images: Object
+  , rating: Object
+  , __v: Number
+})
+
+let casting = mongoose.model('casting', movieSchema1)
+
+var cast = [
+  'paul',
+  'pierre',
+  'poulet'
+];
+
+var cast1 = new casting({cast : cast});
+cast1.save(function (err){
+  if (err) {
+    console.log(err);
+  } else {
+    console.log("it in ! ");
+  }
+})
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 function scrapeData(){
-  var url = 'http://www.imdb.com/title/tt0068646/fullcredits';
+  let url = 'http://www.imdb.com/title/tt0068646/fullcredits';
 
   //Makes the request to the given URL
 
@@ -51,7 +164,57 @@ function scrapeData(){
     console.log(actor);
   })
 }
-scrapeData();
+// scrapeData();
+
+
+
+
+
+
+function scrapeCast(){
+
+
+  let id = "tt0099685";
+  let url1 = "http://www.imdb.com/title/";
+  let url2 = "/fullcredits";
+  let imdbUrl = url1 + id + url2;
+
+
+  let interestingPart = [];
+  let result = [];
+
+
+      request(imdbUrl, function (error, response, body){
+        if (error){
+          console.log(error);
+        }
+
+        let $ = cheerio.load(body)
+        let actor = {};
+        let array = [];
+        let castList = $('.cast_list .primary_photo .loadlate')
+
+          castList.each(function(index, elem){
+
+            array.push($(elem).attr('alt'))
+            array.length = array.length < 10 ? array.length : 10;
+
+
+        })
+        result.push({id, actors : array})
+        console.log(result);
+
+
+      })
+
+}
+scrapeCast();
+
+
+
+
+
+
 
 
 
