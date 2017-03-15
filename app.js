@@ -96,9 +96,31 @@ moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert
   }
 })
 */
+// ====================================== //
+//                                        //
+// ====================================== //
 
-
-
+// function scrapeData(){
+//   let url = 'http://www.imdb.com/title/tt0068646/fullcredits';
+//
+//   //Makes the request to the given URL
+//
+//   request(url, function (error, response, body){
+//     if (error){
+//       console.log(error);
+//     }
+//
+//     let $ = cheerio.load(body);
+//     var actor = [];
+//     var castList = $('.cast_list .primary_photo .loadlate')
+//     castList.each(function(index, elem){
+//       actor.push($(elem).attr('alt'))
+//       actor.length = actor.length < 10 ? actor.length : 10;
+//     })
+//     console.log(actor);
+//   })
+// }
+// // scrapeData();
 
 
 
@@ -156,55 +178,37 @@ moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert
   if (err){
     console.log(err);
   } else {
-    console.log("update ok");
+    //console.log("update ok");
   }
 })
 
 
 
-// var cast1 = new casting({cast : cast});
-// cast1.save(function (err){
-//   if (err) {
-//     console.log(err);
-//   } else {
-//     console.log("it in ! ");
-//   }
-// })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-function scrapeData(){
-  let url = 'http://www.imdb.com/title/tt0068646/fullcredits';
-
-  //Makes the request to the given URL
-
-  request(url, function (error, response, body){
-    if (error){
-      console.log(error);
-    }
-
-    let $ = cheerio.load(body);
-    var actor = [];
-    var castList = $('.cast_list .primary_photo .loadlate')
-    castList.each(function(index, elem){
-      actor.push($(elem).attr('alt'))
-      actor.length = actor.length < 10 ? actor.length : 10;
+function getAllTheIds(){
+  var result = moviesCollection.find({}).select('_id').lean()
+  .then(result => {
+    console.log(result);
+    result.forEach(elem => {
+      elem.id = elem.id.scrapeCast()
+      console.log("hello moto");
     })
-    console.log(actor);
   })
 }
-// scrapeData();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -212,6 +216,7 @@ function scrapeData(){
 
 
 function scrapeCast(){
+  console.log('papi?');
 
 
   let id = "tt0099685";
