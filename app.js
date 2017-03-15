@@ -13,8 +13,13 @@ let app = express();
 
 let mongoose = require('mongoose');
 var db = mongoose.connection;
+let Schema = mongoose.Schema;
 
-mongoose.connect('localhost:27017/popcorn');
+mongoose.connect('localhost:27017/popcorn', function(err, result){
+  if (err){
+    console.log(err);
+  }
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -30,10 +35,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 // app.use('/users', users);
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
-  console.log("Connected to mongodb");
-});
+// db.on('error', console.error.bind(console, 'connection error:'));
+// db.once('open', function() {
+//   console.log("Connected to mongodb");
+// });
+
+
+  // ====================================== //
+  //                 setup                  //
+  // ====================================== //
 
 
 // {
@@ -57,43 +67,9 @@ db.once('open', function() {
 
 
 
-let Schema = mongoose.Schema;
-
-// let movieSchema = new Schema({
-//   _id: String
-//   , imdb_id: String
-//   , title: String
-//   , year: String
-//   , slug: String
-//   , synopsis: String
-//   , runtime: String
-//   , country: String
-//   , last_updated: Number
-//   , released: Number
-//   , certification: String
-//   , torrents: Object
-//   , trailer: String
-//   , genres: Array
-//   , images: Object
-//   , rating: Object
-//   , __v: Number
-// })
-//
-// let id_movie = mongoose.model('movie', movieSchema);
-//
-// id_movie.findOne({'imdb_id' : 'tt3470600'}, function (err, movie){
-//   if (err){
-//     console.log(err);
-//   } else {
-//     console.log(movie.title);
-//     console.log(movie.id);
-//   }
-// })
 
 
-
-
-let movieSchema1 = new Schema({
+let movieSchema = new Schema({
   _id: String
   , imdb_id: String
   , title: String
@@ -114,22 +90,50 @@ let movieSchema1 = new Schema({
   , __v: Number
 })
 
-let casting = mongoose.model('casting', movieSchema1)
 
-var cast = [
-  'paul',
-  'pierre',
-  'poulet'
+// let id_movie = mongoose.model('movie', movieSchema);
+//
+// id_movie.findOne({'imdb_id' : 'tt3470600'}, function (err, movie){
+//   if (err){
+//     console.log(err);
+//   } else {
+//     console.log(movie.title);
+//     console.log(movie.id);
+//     console.log(movie.runtime);
+//   }
+// })
+
+
+
+
+
+
+let moviesCollection = mongoose.model('movie', movieSchema);
+let casting = [
+  "paul",
+  "pierre",
+  "poulet"
 ];
 
-var cast1 = new casting({cast : cast});
-cast1.save(function (err){
-  if (err) {
+
+moviesCollection.update({_id : 'tt3470600'}, { cast: casting }, {upsert: true}, function (err, moviesCollection){
+  if (err){
     console.log(err);
   } else {
-    console.log("it in ! ");
+    console.log("update ok");
   }
 })
+
+
+
+// var cast1 = new casting({cast : cast});
+// cast1.save(function (err){
+//   if (err) {
+//     console.log(err);
+//   } else {
+//     console.log("it in ! ");
+//   }
+// })
 
 
 
@@ -208,7 +212,7 @@ function scrapeCast(){
       })
 
 }
-scrapeCast();
+// scrapeCast();
 
 
 
