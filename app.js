@@ -58,8 +58,44 @@ app.use('/', index);
 //
 // })
 
+// ====================================== //
+//              mongoose tips             //
+// ====================================== //
+
+/*
+find :
+
+id_movie.findOne({'imdb_id' : 'tt3470600'}, function (err, movie){
+  if (err){
+    console.log(err);
+  } else {
+    console.log(movie.title);
+    console.log(movie.id);
+    console.log(movie.runtime);
+  }
+})
 
 
+
+set :
+
+moviesCollection.update({_id : 'tt3470600'}, {cast: casting }, {upsert: true}, function (err, moviesCollection){
+  if (err){
+    console.log(err);
+  } else {
+    console.log("update ok");
+  }
+})
+
+unset :
+moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert: true}, function (err, moviesCollection){
+  if (err){
+    console.log(err);
+  } else {
+    console.log("update ok");
+  }
+})
+*/
 
 
 
@@ -116,7 +152,7 @@ let casting = [
 ];
 
 
-moviesCollection.update({_id : 'tt3470600'}, { cast: casting }, {upsert: true}, function (err, moviesCollection){
+moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert: true}, function (err, moviesCollection){
   if (err){
     console.log(err);
   } else {
