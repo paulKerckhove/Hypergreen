@@ -15,6 +15,9 @@ let mongoose = require('mongoose');
 var db = mongoose.connection;
 let Schema = mongoose.Schema;
 
+let Promise = require("bluebird");
+mongoose.Promise = require('bluebird');
+
 mongoose.connect('localhost:27017/popcorn', function(err, result){
   if (err){
     console.log(err);
@@ -167,6 +170,7 @@ let movieSchema = new Schema({
 
 
 let moviesCollection = mongoose.model('movie', movieSchema);
+
 let casting = [
   "paul",
   "pierre",
@@ -183,19 +187,18 @@ moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert
 })
 
 
+let arrId = [];
+
 
 
 function getAllTheIds(){
   var result = moviesCollection.find({}).select('_id').lean()
   .then(result => {
-    console.log(result);
-    result.forEach(elem => {
-      elem.id = elem.id.scrapeCast()
-      console.log("hello moto");
-    })
+    var new_array = result.map(scrapeCast)
   })
 }
 
+// getAllTheIds()
 
 
 
@@ -214,15 +217,15 @@ function getAllTheIds(){
 
 
 
-
-function scrapeCast(){
-  console.log('papi?');
+function scrapeCast(_id){
 
 
-  let id = "tt0099685";
+
+  let id = _id._id;
   let url1 = "http://www.imdb.com/title/";
   let url2 = "/fullcredits";
   let imdbUrl = url1 + id + url2;
+//let imdbUrl = 'http://www.imdb.com/title/tt0450385/fullcredits'
 
 
   let interestingPart = [];
@@ -246,14 +249,14 @@ function scrapeCast(){
 
 
         })
-        result.push({id, actors : array})
-        console.log(result);
+        result.push({_id, actors : array})
+        return
+        //console.log(result);
 
 
       })
 
 }
-// scrapeCast();
 
 
 
