@@ -90,6 +90,8 @@ moviesCollection.update({_id : 'tt3470600'}, {cast: casting }, {upsert: true}, f
   }
 })
 
+
+
 unset :
 moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert: true}, function (err, moviesCollection){
   if (err){
@@ -152,6 +154,9 @@ let movieSchema = new Schema({
 })
 
 
+let moviesCollection = mongoose.model('movie', movieSchema);
+
+
 // let id_movie = mongoose.model('movie', movieSchema);
 //
 // id_movie.findOne({'imdb_id' : 'tt3470600'}, function (err, movie){
@@ -166,28 +171,13 @@ let movieSchema = new Schema({
 
 
 
+// let casting = [
+//   "paul",
+//   "pierre",
+//   "poulet"
+// ];
 
 
-
-let moviesCollection = mongoose.model('movie', movieSchema);
-
-let casting = [
-  "paul",
-  "pierre",
-  "poulet"
-];
-
-
-moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert: true}, function (err, moviesCollection){
-  if (err){
-    console.log(err);
-  } else {
-    //console.log("update ok");
-  }
-})
-
-
-let arrId = [];
 
 
 
@@ -207,25 +197,23 @@ function getAllTheIds(){
 
 
 
-
-
-
-
-
-
-
+// moviesCollection.update({_id : 'tt0110912'}, {cast: array }, {upsert: true}, function (err, moviesCollection){
+//   if (err){
+//     console.log(err);
+//   } else {
+//     console.log("update ok");
+//   }
+// })
 
 
 
 function scrapeCast(_id){
 
-
-
-  let id = _id._id;
-  let url1 = "http://www.imdb.com/title/";
-  let url2 = "/fullcredits";
-  let imdbUrl = url1 + id + url2;
-//let imdbUrl = 'http://www.imdb.com/title/tt0450385/fullcredits'
+  // let id = _id._id;
+  // let url1 = "http://www.imdb.com/title/";
+  // let url2 = "/fullcredits";
+  // let imdbUrl = url1 + id + url2;
+  let imdbUrl = 'http://www.imdb.com/title/tt0110912/fullcredits'
 
 
   let interestingPart = [];
@@ -249,14 +237,22 @@ function scrapeCast(_id){
 
 
         })
-        result.push({_id, actors : array})
+        result.push({_id : 'tt0110912', actors : array})
+        moviesCollection.update({_id : 'tt0110912'}, {cast: array }, {upsert: true}, function (err, moviesCollection){
+          if (err){
+            console.log(err);
+          } else {
+            console.log("update ok");
+          }
+        })
+        console.log(result);
         return
-        //console.log(result);
 
 
       })
 
 }
+scrapeCast()
 
 
 
