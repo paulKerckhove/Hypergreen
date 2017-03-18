@@ -14,6 +14,8 @@ let app = express();
 let mongoose = require('mongoose');
 var db = mongoose.connection;
 let Schema = mongoose.Schema;
+let sleep = require('sleep');
+let async = require('async');
 
 let Promise = require("bluebird");
 mongoose.Promise = require('bluebird');
@@ -129,6 +131,27 @@ moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert
 
 
 
+// let id_movie = mongoose.model('movie', movieSchema);
+//
+// id_movie.findOne({'imdb_id' : 'tt3470600'}, function (err, movie){
+//   if (err){
+//     console.log(err);
+//   } else {
+//     console.log(movie.title);
+//     console.log(movie.id);
+//     console.log(movie.runtime);
+//   }
+// })
+
+
+
+// let casting = [
+//   "paul",
+//   "pierre",
+//   "poulet"
+// ];
+
+
 
 
 
@@ -157,25 +180,6 @@ let movieSchema = new Schema({
 let moviesCollection = mongoose.model('movie', movieSchema);
 
 
-// let id_movie = mongoose.model('movie', movieSchema);
-//
-// id_movie.findOne({'imdb_id' : 'tt3470600'}, function (err, movie){
-//   if (err){
-//     console.log(err);
-//   } else {
-//     console.log(movie.title);
-//     console.log(movie.id);
-//     console.log(movie.runtime);
-//   }
-// })
-
-
-
-// let casting = [
-//   "paul",
-//   "pierre",
-//   "poulet"
-// ];
 
 
 
@@ -184,75 +188,68 @@ let moviesCollection = mongoose.model('movie', movieSchema);
 function getAllTheIds(){
   var result = moviesCollection.find({}).select('_id').lean()
   .then(result => {
-    var new_array = result.map(scrapeCast)
+    result.forEach(function(index, elem) {
+      if (index % 50 === 0 && index != 0){
+        sleep.sleep(60);
+      }
+      scrapeCast(elem);
+    })
   })
 }
 
-// getAllTheIds()
+getAllTheIds()
 
 
 
 
+function scrapeCast(obj){
 
-
-
-
-// moviesCollection.update({_id : 'tt0110912'}, {cast: array }, {upsert: true}, function (err, moviesCollection){
-//   if (err){
-//     console.log(err);
-//   } else {
-//     console.log("update ok");
-//   }
-// })
-
-
-
-function scrapeCast(_id){
-
-  // let id = _id._id;
-  // let url1 = "http://www.imdb.com/title/";
-  // let url2 = "/fullcredits";
-  // let imdbUrl = url1 + id + url2;
-  let imdbUrl = 'http://www.imdb.com/title/tt0110912/fullcredits'
-
-
+  let id = obj._id;
+  let url1 = "http://www.imdb.com/title/";
+  let url2 = "/fullcredits";
+  let imdbUrl = url1 + id + url2;
   let interestingPart = [];
-  let result = [];
 
 
       request(imdbUrl, function (error, response, body){
         if (error){
           console.log(error);
+        } else {
+          let $ = cheerio.load(body)
+          let actor = {};
+          let array = [];
+          let castList = $('.cast_list .primary_photo .loadlate')
+              async.series([
+                function(callback) {
+                  async.each(castList, function(elem, next){
+                    array.push($(elem).attr('alt'))
+                    array.length = array.length < 10 ? array.length : 10;
+                    next();
+                  }, function() {
+                    callback()
+                  })
+                },
+                function(callback) {
+                  console.log('array ici' , array);
+                  moviesCollection.update({_id : id}, {cast: array }, {upsert: true}, function (err, moviesCollection){
+                    if (err){
+                      console.log(err);
+                      callback();
+                    } else {
+                      console.log(array);
+                      callback();
+                    }
+                  })
+                }
+              ],
+              function() {
+                return
+              })
         }
-
-        let $ = cheerio.load(body)
-        let actor = {};
-        let array = [];
-        let castList = $('.cast_list .primary_photo .loadlate')
-
-          castList.each(function(index, elem){
-
-            array.push($(elem).attr('alt'))
-            array.length = array.length < 10 ? array.length : 10;
-
-
-        })
-        result.push({_id : 'tt0110912', actors : array})
-        moviesCollection.update({_id : 'tt0110912'}, {cast: array }, {upsert: true}, function (err, moviesCollection){
-          if (err){
-            console.log(err);
-          } else {
-            console.log("update ok");
-          }
-        })
-        console.log(result);
-        return
-
-
       })
-
 }
-scrapeCast()
+// scrapeCast()
+
 
 
 
