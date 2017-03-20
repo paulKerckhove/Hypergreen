@@ -37,13 +37,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/', index);
-// app.use('/users', users);
-// db.on('error', console.error.bind(console, 'connection error:'));
-// db.once('open', function() {
-//   console.log("Connected to mongodb");
-// });
 
 
   // ====================================== //
@@ -107,52 +101,6 @@ moviesCollection.update({_id : 'tt3470600'}, {$unset: {cast: casting }}, {upsert
 //                                        //
 // ====================================== //
 
-// function scrapeData(){
-//   let url = 'http://www.imdb.com/title/tt0068646/fullcredits';
-//
-//   //Makes the request to the given URL
-//
-//   request(url, function (error, response, body){
-//     if (error){
-//       console.log(error);
-//     }
-//
-//     let $ = cheerio.load(body);
-//     var actor = [];
-//     var castList = $('.cast_list .primary_photo .loadlate')
-//     castList.each(function(index, elem){
-//       actor.push($(elem).attr('alt'))
-//       actor.length = actor.length < 10 ? actor.length : 10;
-//     })
-//     console.log(actor);
-//   })
-// }
-// // scrapeData();
-
-
-
-// let id_movie = mongoose.model('movie', movieSchema);
-//
-// id_movie.findOne({'imdb_id' : 'tt3470600'}, function (err, movie){
-//   if (err){
-//     console.log(err);
-//   } else {
-//     console.log(movie.title);
-//     console.log(movie.id);
-//     console.log(movie.runtime);
-//   }
-// })
-
-
-
-// let casting = [
-//   "paul",
-//   "pierre",
-//   "poulet"
-// ];
-
-
-
 
 
 let movieSchema = new Schema({
@@ -179,12 +127,6 @@ let movieSchema = new Schema({
 
 let moviesCollection = mongoose.model('movie', movieSchema);
 
-
-
-
-
-
-
 function getAllTheIds(){
   let i = 0;
   var result = moviesCollection.find({}).select('_id').lean()
@@ -201,10 +143,8 @@ function getAllTheIds(){
 getAllTheIds()
 
 
-
-
 function scrapeCast(elem, callback4){
-  console.log("sleep 5 sec n1 here");
+  console.log("sleep 4 sec");
   sleep.sleep(4);
 
   let id = elem._id;
@@ -212,52 +152,42 @@ function scrapeCast(elem, callback4){
   let url2 = "/fullcredits";
   let imdbUrl = url1 + id + url2;
   let interestingPart = [];
-  console.log(id);
-
-
-
-
-      request(imdbUrl, function (error, response, body){
-        // console.log(imdbUrl);
-        if (error){
-          console.log(error);
-        } else {
-          let $ = cheerio.load(body)
-          let actor = {};
-          let array = [];
-          let castList = $('[itemprop="name"]:not(h3)')
-          async.series([
-            function(callback) {
-              async.each(castList, function(elem, next){
-                array.push($(elem).text())
-                array.length = array.length < 10 ? array.length : 10;
-                next();
-              }, function() {
-                callback()
-              })
-            },
-            function(callback) {
-              moviesCollection.update({_id : id}, {cast: array }, {upsert: true}, function (err, moviesCollection){
-                if (err){
-                  console.log(err);
-                  callback();
-                } else {
-                  console.log(array);
-                  callback();
-                }
-              })
+  request(imdbUrl, function (error, response, body){
+    if (error){
+      console.log(error);
+    } else {
+      let $ = cheerio.load(body)
+      let actor = {};
+      let array = [];
+      let castList = $('[itemprop="name"]:not(h3)')
+      async.series([
+        function(callback) {
+          async.each(castList, function(elem, next){
+            array.push($(elem).text())
+            array.length = array.length < 10 ? array.length : 10;
+            next();
+          }, function() {
+            callback()
+          })
+        },
+        function(callback) {
+          moviesCollection.update({_id : id}, {cast: array }, {upsert: true}, function (err, moviesCollection){
+            if (err){
+              console.log(err);
+              callback();
+            } else {
+              console.log(array);
+              callback();
             }
-          ],
-          function() {
-            callback4()
           })
         }
+      ],
+      function() {
+        callback4()
       })
+    }
+  })
 }
-
-
-
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
