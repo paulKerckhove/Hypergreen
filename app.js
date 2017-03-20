@@ -186,13 +186,14 @@ let moviesCollection = mongoose.model('movie', movieSchema);
 
 
 function getAllTheIds(){
+  let i = 0;
   var result = moviesCollection.find({}).select('_id').lean()
   .then(result => {
-    result.forEach(function(index, elem) {
-      if (index % 50 === 0 && index != 0){
-        sleep.sleep(60);
-      }
-      scrapeCast(elem);
+    async.eachSeries(result, function (elem, callback) {
+      scrapeCast(elem, function () {
+        ++i;
+        callback()
+      });
     })
   })
 }
@@ -202,58 +203,57 @@ getAllTheIds()
 
 
 
-function scrapeCast(obj){
+function scrapeCast(elem, callback4){
+  console.log("sleep 5 sec n1 here");
+  sleep.sleep(4);
 
-  let id = obj._id;
+  let id = elem._id;
   let url1 = "http://www.imdb.com/title/";
   let url2 = "/fullcredits";
   let imdbUrl = url1 + id + url2;
   let interestingPart = [];
+  console.log(id);
+
+
 
 
       request(imdbUrl, function (error, response, body){
+        // console.log(imdbUrl);
         if (error){
           console.log(error);
         } else {
           let $ = cheerio.load(body)
           let actor = {};
           let array = [];
-          let castList = $('.cast_list .primary_photo .loadlate')
-              async.series([
-                function(callback) {
-                  async.each(castList, function(elem, next){
-                    array.push($(elem).attr('alt'))
-                    array.length = array.length < 10 ? array.length : 10;
-                    next();
-                  }, function() {
-                    callback()
-                  })
-                },
-                function(callback) {
-                  console.log('array ici' , array);
-                  moviesCollection.update({_id : id}, {cast: array }, {upsert: true}, function (err, moviesCollection){
-                    if (err){
-                      console.log(err);
-                      callback();
-                    } else {
-                      console.log(array);
-                      callback();
-                    }
-                  })
-                }
-              ],
-              function() {
-                return
+          let castList = $('[itemprop="name"]:not(h3)')
+          async.series([
+            function(callback) {
+              async.each(castList, function(elem, next){
+                array.push($(elem).text())
+                array.length = array.length < 10 ? array.length : 10;
+                next();
+              }, function() {
+                callback()
               })
+            },
+            function(callback) {
+              moviesCollection.update({_id : id}, {cast: array }, {upsert: true}, function (err, moviesCollection){
+                if (err){
+                  console.log(err);
+                  callback();
+                } else {
+                  console.log(array);
+                  callback();
+                }
+              })
+            }
+          ],
+          function() {
+            callback4()
+          })
         }
       })
 }
-// scrapeCast()
-
-
-
-
-
 
 
 
