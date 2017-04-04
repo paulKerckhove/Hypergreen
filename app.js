@@ -8,18 +8,14 @@ let index = require('./routes/index');
 let request = require('request');
 let cheerio = require('cheerio');
 let fs = require('fs');
-
 let app = express();
-
 let mongoose = require('mongoose');
 var db = mongoose.connection;
 let Schema = mongoose.Schema;
 let sleep = require('sleep');
 let async = require('async');
-
 let Promise = require("bluebird");
 mongoose.Promise = require('bluebird');
-
 mongoose.connect('localhost:27017/popcorn', function(err, result){
   if (err){
     console.log(err);
